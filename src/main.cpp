@@ -1,16 +1,19 @@
 #include <SFML/Graphics.hpp>
+using namespace sf;
 
 int main()
 {
-	sf::RenderWindow window( sf::VideoMode( { 200, 200 } ), "SFML works!" );
-	sf::CircleShape shape( 100.f );
-	shape.setFillColor( sf::Color::Green );
+	RenderWindow window( VideoMode( { 740, 480 } ), "Match The Cat" );
+	window.setFramerateLimit(60);
+
+	CircleShape shape( 100.f );
+	shape.setFillColor( Color::Green );
 
 	while ( window.isOpen() )
 	{
 		while ( const std::optional event = window.pollEvent() )
 		{
-			if ( event->is<sf::Event::Closed>() )
+			if ( event->is<Event::Closed>() )
 				window.close();
 		}
 
