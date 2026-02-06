@@ -13,6 +13,11 @@ FetchContent_Declare(SFML
 FetchContent_MakeAvailable(SFML)
 
 add_executable(main src/main.cpp)
+
+# Copy images
+file(COPY ${CMAKE_SOURCE_DIR}/images
+     DESTINATION ${CMAKE_BINARY_DIR}/bin)
+
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE SFML::Graphics)
 
