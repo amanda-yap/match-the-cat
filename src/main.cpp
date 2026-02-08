@@ -52,7 +52,7 @@ int main()
 	int x0, y0, x , y; 
 	int click = 0; 
 	Vector2i mousePosition;
-	bool isMoving = false;
+	bool isSwap = false, isMoving = false;
 
 	while (window.isOpen()) {
 		while (const std::optional event = window.pollEvent()) {
@@ -62,7 +62,7 @@ int main()
 
 			if (const auto* mouseButtonPressed = event->getIf<Event::MouseButtonPressed>()) {
 				if (mouseButtonPressed->button == Mouse::Button::Left) {
-					if (!isMoving) {
+					if (!isSwap && !isMoving) {
 						click++;
 						mousePosition = Mouse::getPosition(window) - offset;
 					}
@@ -86,6 +86,7 @@ int main()
 			// if the two cats are in the same row or same column, then swap
 			if (abs(x - x0) + abs(y - y0) == 1) {
 				swap(grid[y0][x0], grid[y][x]);
+				isSwap = true;
 				click = 0;
 			}
 			else {
@@ -148,6 +149,22 @@ int main()
 			}
 		}
 
+		// update score
+		int score = 0;
+		for (int i = 1; i <= 8; i++) {
+			for (int j = 1; j <= 8; j++) {
+				score += grid[i][j].match;
+			}
+		}
+
+		// swap back if no match (invalid swap)
+		if (isSwap && !isMoving) {
+			if (!score) {
+				swap(grid[y0][x0], grid[y][x]); 
+			}
+			isSwap = false;
+		}
+
 
 		// update grid with new cats
 		if (!isMoving) {
@@ -158,7 +175,7 @@ int main()
 						if (!grid[n][j].match) {
 							swap(grid[n][j], grid[i][j]); 
 							break;
-						};
+						}
 					}
 				}
 			}
