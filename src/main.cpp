@@ -18,7 +18,7 @@ struct Cat {
 grid[10][10];
 
 void swap(Cat c1, Cat c2) {
-	// swap col and row of cat
+	// swap col and row of cats
 	std::swap(c1.col, c2.col);
 	std::swap(c1.row, c2.row);
 
@@ -180,8 +180,8 @@ int main()
 				}
 			}
 			
-			for(int j = 1; j <= 8; j++) {
-				for(int i = 8, n = 0; i > 0; i--) {
+			for (int j = 1; j <= 8; j++) {
+				for (int i = 8, n = 0; i > 0; i--) {
 					if (grid[i][j].match) {
 						grid[i][j].type= rand() % 7;
 						grid[i][j].y = -tileSize * n++;
