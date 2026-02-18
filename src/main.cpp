@@ -66,21 +66,23 @@ int main()
 						click++;
 						mousePosition = Mouse::getPosition(window) - offset;
 					}
-					
 				}
 			}
 		}
 
+		// convert mouse position to row and col
+		int mx = mousePosition.x / tileSize + 1;
+		int my = mousePosition.y / tileSize + 1;
+
 		// mouse clicks and swap
 		if (click == 1) {
-			// convert mouse position to row and col
-			x0 = mousePosition.x / tileSize + 1;
-			y0 = mousePosition.y / tileSize + 1;
+			x0 = mx;
+			y0 = my;
 			// (x0, y0) is the position of the first cat
 		}
 		if (click == 2) {
-			x = mousePosition.x / tileSize + 1;
-			y = mousePosition.y / tileSize + 1;
+			x = mx;
+			y = my;
 			// (x, y) is the position of the second cat
 
 			// if the two cats are in the same row or same column, then swap
@@ -94,24 +96,50 @@ int main()
 			}
 		}
 
-		// find match
+		// Row match finding
 		for (int i = 1; i <= 8; i++) {
-			for (int j = 1; j <= 8; j++) {
-				int t = grid[i][j].type;
-				// vertical match
-				if (grid[i - 1][j].type == t &&
-					grid[i + 1][j].type == t) {
-					grid[i - 1][j].match++;
-					grid[i][j].match++;
-					grid[i + 1][j].match++;
+			int count = 1;
+			for (int j = 2; j <= 8; j++) {
+				if (grid[i][j].type == grid[i][j - 1].type) {
+					count++;
 				}
-				// horizontal match
-				if (grid[i][j - 1].type == t &&
-					grid[i][j + 1].type == t) {
-					grid[i][j - 1].match++;
-					grid[i][j].match++;
-					grid[i][j + 1].match++;
+				else {
+					if (count >= 3) {
+						for (int k = 0; k < count; k++) {
+							grid[i][j - 1 - k].match++;
+						}
+					}
+					count = 1;
 				}
+			}
+			// Add matches for end of row
+			if (count >= 3) {
+				for (int k = 0; k < count; k++)
+					grid[i][8 - k].match++;
+			}
+		}
+
+
+		// Column match finding
+		for (int j = 1; j <= 8; j++) {
+			int count = 1;
+			for (int i = 2; i <= 8; i++) {
+				if (grid[i][j].type == grid[i - 1][j].type) {
+					count++;
+				} 
+				else {
+					if (count >= 3) {
+						for (int k = 0; k < count; k++) {
+							grid[i - 1 - k][j].match++;
+						}
+					}
+					count = 1;
+				}
+			}
+			// Add matches for end of column
+			if (count >= 3) {
+				for (int k = 0; k < count; k++)
+					grid[8 - k][j].match++;
 			}
 		}
 		
