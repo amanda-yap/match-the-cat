@@ -52,7 +52,7 @@ int main()
 	int x0, y0, x , y; 
 	int click = 0; 
 	Vector2i mousePosition;
-	bool isSwap = false, isMoving = false;
+	bool isSwapping = false, isMoving = false;
 
 	while (window.isOpen()) {
 		while (const std::optional event = window.pollEvent()) {
@@ -62,7 +62,7 @@ int main()
 
 			if (const auto* mouseButtonPressed = event->getIf<Event::MouseButtonPressed>()) {
 				if (mouseButtonPressed->button == Mouse::Button::Left) {
-					if (!isSwap && !isMoving) {
+					if (!isSwapping && !isMoving) {
 						click++;
 						mousePosition = Mouse::getPosition(window) - offset;
 					}
@@ -88,7 +88,7 @@ int main()
 			// if the two cats are in the same row or same column, then swap
 			if (abs(x - x0) + abs(y - y0) == 1) {
 				swap(grid[y0][x0], grid[y][x]);
-				isSwap = true;
+				isSwapping = true;
 				click = 0;
 			}
 			else {
@@ -181,38 +181,36 @@ int main()
 
 
 		// swap back if no match (invalid swap)
-		if (isSwap && !isMoving) {
+		if (isSwapping && !isMoving) {
 			if (score == 0) {
 				swap(grid[y0][x0], grid[y][x]); 
 			}
-			isSwap = false;
+			isSwapping = false;
 		}
 
 
 		if (!isMoving) {
 			// gravity
 			for (int j = 1; j <= 8; j++) {
-				int writeRow = 8;  // where next valid cat should fall
+				int nextFreeRow = 8;  // bottom-most free row
 				for (int i = 8; i > 0; i--) {
-					if (!grid[i][j].match) {
-						if (i != writeRow)
-							swap(grid[i][j], grid[writeRow][j]);
-						writeRow--;
+					if (!grid[i][j].match) { // cat falls if no match
+						if (i != nextFreeRow)
+							swap(grid[i][j], grid[nextFreeRow][j]);
+						nextFreeRow--; // move next free row up
 					}
 				}
 			}
 				
 			// make new cats
 			for (int j = 1; j <= 8; j++) {
-				int spawnOffset = 0;
-
+				int spawnCount = 0;
 				for (int i = 8; i > 0; i--) {
 					Cat &cat = grid[i][j];
-
-					if (cat.match) {
+					if (cat.match) { // replace matched cat with new one
 						cat.type = rand() % 7;
-						cat.y = -tileSize * spawnOffset++;
-						cat.match = 0;
+						cat.y = -tileSize * spawnCount++;
+						cat.match = 0; // reset state for new cat
 						cat.alpha = 255;
 					}
 				}
