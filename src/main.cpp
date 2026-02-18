@@ -143,78 +143,77 @@ int main()
 			}
 		}
 		
-		// moving animation
 		isMoving = false;
+
 		for (int i = 1; i <= 8; i++) {
 			for (int j = 1; j <= 8; j++) {
 				Cat &cat = grid[i][j];
-				int dx, dy;
-				
-				// dx and dy are the differences of the previous and new coordinates of the cat
-				dx = cat.x - cat.col * tileSize;
-				dy = cat.y - cat.row * tileSize;
-				if (dx != 0) {
-					cat.x -= dx/abs(dx); // move closer to new position until dx = 0 (move by +-1 pixels)
-				}
-				if (dy != 0) {
-					cat.y -= dy/abs(dy);
-				}
+				int targetX = cat.col * tileSize;
+				int targetY = cat.row * tileSize;
+				int dx = cat.x - targetX;
+				int dy = cat.y - targetY;
+
+				cat.x -= (dx > 0) - (dx < 0);
+				cat.y -= (dy > 0) - (dy < 0);
+
 				if (dx != 0 || dy != 0) {
 					isMoving = true;
 				}
 			}
 		}
 
-		// deleting animation
+		int score = 0;
+
 		if (!isMoving) {
 			for (int i = 1; i <= 8; i++) {
 				for (int j = 1; j <= 8; j++) {
-					if (grid[i][j].match && grid[i][j].alpha > 10) {
-						grid[i][j].alpha -= 10; 
-						isMoving = true;
+					Cat &cat = grid[i][j];
+					if (cat.match) {
+						score += cat.match;
+						if (cat.alpha > 10) {
+							cat.alpha -= 10;
+							isMoving = true;
+						}
 					}
 				}
 			}
 		}
 
-		// update score
-		int score = 0;
-		for (int i = 1; i <= 8; i++) {
-			for (int j = 1; j <= 8; j++) {
-				score += grid[i][j].match;
-			}
-		}
 
 		// swap back if no match (invalid swap)
 		if (isSwap && !isMoving) {
-			if (!score) {
+			if (score == 0) {
 				swap(grid[y0][x0], grid[y][x]); 
 			}
 			isSwap = false;
 		}
 
 
-		// update grid with new cats
 		if (!isMoving) {
-			for (int i = 8; i > 0; i--) {
-				for (int j = 1; j <= 8; j++) {
-					if (grid[i][j].match) {
-					for(int n = i; n > 0; n--)
-						if (!grid[n][j].match) {
-							swap(grid[n][j], grid[i][j]); 
-							break;
-						}
+			// gravity
+			for (int j = 1; j <= 8; j++) {
+				int writeRow = 8;  // where next valid cat should fall
+				for (int i = 8; i > 0; i--) {
+					if (!grid[i][j].match) {
+						if (i != writeRow)
+							swap(grid[i][j], grid[writeRow][j]);
+						writeRow--;
 					}
 				}
 			}
-			
+				
+			// make new cats
 			for (int j = 1; j <= 8; j++) {
-				for (int i = 8, n = 0; i > 0; i--) {
-					if (grid[i][j].match) {
-						grid[i][j].type= rand() % 7;
-						grid[i][j].y = -tileSize * n++;
-						grid[i][j].match = 0;
-						grid[i][j].alpha = 255;
+				int spawnOffset = 0;
+
+				for (int i = 8; i > 0; i--) {
+					Cat &cat = grid[i][j];
+
+					if (cat.match) {
+						cat.type = rand() % 7;
+						cat.y = -tileSize * spawnOffset++;
+						cat.match = 0;
+						cat.alpha = 255;
 					}
 				}
 			}
