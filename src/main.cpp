@@ -3,7 +3,7 @@
 
 using namespace sf;
 
-
+constexpr int GRID_SIZE = 8;
 int tileSize = 54;
 Vector2i offset(46,27); // to set (0, 0) as the top left corner of the grid
 
@@ -15,7 +15,7 @@ struct Cat {
 	}
 } 
 
-grid[10][10];
+grid[GRID_SIZE][GRID_SIZE];
 
 int main()
 {
@@ -29,11 +29,11 @@ int main()
 	Sprite background(t1), cats(t2);
 
 	// initialise grid with cats
-	for (int i = 1; i <= 8; i++) {
-		for (int j = 1; j <= 8; j++) {
+	for (int i = 0; i < GRID_SIZE; i++) {
+		for (int j = 0; j < GRID_SIZE; j++) {
 			 grid[i][j].type = rand() % 7; // randomly set cat to one of the seven types
-			 grid[i][j].x = j * tileSize;
-			 grid[i][j].y = i * tileSize;
+			 grid[i][j].x = (j + 1) * tileSize;
+			 grid[i][j].y = (i + 1) * tileSize;
 		}
 	}
 
@@ -59,11 +59,11 @@ int main()
 		}
 
 		// convert mouse position to row and col
-		int mx = mousePosition.x / tileSize + 1;
-		int my = mousePosition.y / tileSize + 1;
+		int mx = mousePosition.x / tileSize;
+		int my = mousePosition.y / tileSize;
 
 		// if a tile has been clicked that is not within the grid, reset click count
-		if (mx < 1 || mx > 8 || my < 1 || my > 8) {
+		if (mx < 0 || mx >= 8 || my < 0 || my >= 8) {
 			click = 0;
 		}
 
@@ -91,9 +91,9 @@ int main()
 		}
 
 		// row match finding
-		for (int i = 1; i <= 8; i++) {
+		for (int i = 0; i < GRID_SIZE; i++) {
 			int count = 1;
-			for (int j = 2; j <= 8; j++) {
+			for (int j = 1; j < GRID_SIZE; j++) {
 				if (grid[i][j].type == grid[i][j - 1].type) {
 					count++;
 				}
@@ -109,15 +109,15 @@ int main()
 			// add matches for end of row
 			if (count >= 3) {
 				for (int k = 0; k < count; k++)
-					grid[i][8 - k].match++;
+					grid[i][GRID_SIZE - 1 - k].match++;
 			}
 		}
 
 
 		// column match finding
-		for (int j = 1; j <= 8; j++) {
+		for (int j = 0; j < GRID_SIZE; j++) {
 			int count = 1;
-			for (int i = 2; i <= 8; i++) {
+			for (int i = 1; i < GRID_SIZE; i++) {
 				if (grid[i][j].type == grid[i - 1][j].type) {
 					count++;
 				} 
@@ -133,17 +133,17 @@ int main()
 			// add matches for end of column
 			if (count >= 3) {
 				for (int k = 0; k < count; k++)
-					grid[8 - k][j].match++;
+					grid[GRID_SIZE - 1 - k][j].match++;
 			}
 		}
 		
 		isMoving = false;
 
-		for (int i = 1; i <= 8; i++) {
-			for (int j = 1; j <= 8; j++) {
+		for (int i = 0; i < GRID_SIZE; i++) {
+			for (int j = 0; j < GRID_SIZE; j++) {
 				Cat &cat = grid[i][j];
-				int targetX = j * tileSize;
-				int targetY = i * tileSize;
+				int targetX = (j + 1) * tileSize;
+				int targetY = (i + 1) * tileSize;
 				int dx = cat.x - targetX;
 				int dy = cat.y - targetY;
 
@@ -159,8 +159,8 @@ int main()
 		int score = 0;
 
 		if (!isMoving) {
-			for (int i = 1; i <= 8; i++) {
-				for (int j = 1; j <= 8; j++) {
+			for (int i = 0; i < GRID_SIZE; i++) {
+				for (int j = 0; j < GRID_SIZE; j++) {
 					Cat &cat = grid[i][j];
 					if (cat.match) {
 						score += cat.match;
@@ -185,9 +185,9 @@ int main()
 
 		if (!isMoving) {
 			// gravity
-			for (int j = 1; j <= 8; j++) {
-				int nextFreeRow = 8;  // bottom-most free row
-				for (int i = 8; i > 0; i--) {
+			for (int j = 0; j < GRID_SIZE; j++) {
+				int nextFreeRow = GRID_SIZE - 1;  // bottom-most free row
+				for (int i = GRID_SIZE - 1; i >= 0; i--) {
 					if (!grid[i][j].match) { // cat falls if no match
 						if (i != nextFreeRow)
 							std::swap(grid[i][j], grid[nextFreeRow][j]);
@@ -197,14 +197,14 @@ int main()
 			}
 				
 			// make new cats
-			for (int j = 1; j <= 8; j++) {
+			for (int j = 0; j < GRID_SIZE; j++) {
 				int spawnCount = 0;
-				for (int i = 8; i > 0; i--) {
+				for (int i = GRID_SIZE - 1; i >= 0; i--) {
 					Cat &cat = grid[i][j];
-					if (cat.match) { // replace matched cat with new one
+					if (cat.match) {
 						cat.type = rand() % 7;
-						cat.y = -tileSize * spawnCount++;
-						cat.match = 0; // reset state for new cat
+						cat.y = -tileSize * (spawnCount++);
+						cat.match = 0;
 						cat.alpha = 255;
 					}
 				}
@@ -216,18 +216,15 @@ int main()
 		window.draw(background);
 
 		// draw cats
-		for (int i = 1; i <= 8; i++) {
-			for (int j = 1; j <= 8; j++) {
-				Cat cat = grid[i][j];
-				cats.setTextureRect(IntRect({cat.type * 49, 0}, {49, 49})); // set texture to cat type (each cat is a 49x49 square)
+		for (int i = 0; i < GRID_SIZE; i++) {
+			for (int j = 0; j < GRID_SIZE; j++) {
+				Cat &cat = grid[i][j];
+				cats.setTextureRect(IntRect({cat.type * 49, 0}, {49, 49}));
 				cats.setColor(Color(255, 255, 255, cat.alpha));
-				Vector2f position(cat.x, cat.y);
-				cats.setPosition(position);
-				Vector2f offsetPosition(offset.x-tileSize, offset.y-tileSize);
-        		cats.move(offsetPosition); // move cats to be aligned with grid
+				cats.setPosition(Vector2f(cat.x, cat.y));
+				cats.move(Vector2f(offset.x - tileSize, offset.y - tileSize)); // move cats to be aligned with grid
 				window.draw(cats);
 			}
-			
 		}
 		window.display();
 	}
