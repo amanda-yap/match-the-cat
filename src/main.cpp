@@ -74,6 +74,11 @@ int main()
 		int mx = mousePosition.x / tileSize + 1;
 		int my = mousePosition.y / tileSize + 1;
 
+		// if a tile has been clicked that is not within the grid, reset click count
+		if (mx < 1 || mx > 8 || my < 1 || my > 8) {
+			click = 0;
+		}
+
 		// mouse clicks and swap
 		if (click == 1) {
 			x0 = mx;
@@ -84,9 +89,10 @@ int main()
 			x = mx;
 			y = my;
 			// (x, y) is the position of the second cat
-
-			// if the two cats are in the same row or same column, then swap
-			if (abs(x - x0) + abs(y - y0) == 1) {
+		
+			// if the two cats are in the same row or same column and one tile apart, then swap
+			if ((abs(x - x0) == 1 && y == y0) ||
+				(abs(y - y0) == 1 && x == x0)) {
 				swap(grid[y0][x0], grid[y][x]);
 				isSwapping = true;
 				click = 0;
@@ -96,7 +102,7 @@ int main()
 			}
 		}
 
-		// Row match finding
+		// row match finding
 		for (int i = 1; i <= 8; i++) {
 			int count = 1;
 			for (int j = 2; j <= 8; j++) {
@@ -112,7 +118,7 @@ int main()
 					count = 1;
 				}
 			}
-			// Add matches for end of row
+			// add matches for end of row
 			if (count >= 3) {
 				for (int k = 0; k < count; k++)
 					grid[i][8 - k].match++;
@@ -120,7 +126,7 @@ int main()
 		}
 
 
-		// Column match finding
+		// column match finding
 		for (int j = 1; j <= 8; j++) {
 			int count = 1;
 			for (int i = 2; i <= 8; i++) {
@@ -136,7 +142,7 @@ int main()
 					count = 1;
 				}
 			}
-			// Add matches for end of column
+			// add matches for end of column
 			if (count >= 3) {
 				for (int k = 0; k < count; k++)
 					grid[8 - k][j].match++;
