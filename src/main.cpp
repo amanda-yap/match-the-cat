@@ -8,7 +8,7 @@ int tileSize = 54;
 Vector2i offset(46,27); // to set (0, 0) as the top left corner of the grid
 
 struct Cat { 
-	int x, y, col, row, type, match, alpha;
+	int x, y, type, match, alpha;
   	Cat() {
 		match = 0;
 		alpha = 255;
@@ -16,16 +16,6 @@ struct Cat {
 } 
 
 grid[10][10];
-
-void swap(Cat c1, Cat c2) {
-	// swap col and row of cats
-	std::swap(c1.col, c2.col);
-	std::swap(c1.row, c2.row);
-
-	// set grid position for swapped cats
-	grid[c1.row][c1.col]= c1;
-	grid[c2.row][c2.col]= c2;
-}
 
 int main()
 {
@@ -42,8 +32,6 @@ int main()
 	for (int i = 1; i <= 8; i++) {
 		for (int j = 1; j <= 8; j++) {
 			 grid[i][j].type = rand() % 7; // randomly set cat to one of the seven types
-			 grid[i][j].col = j;
-			 grid[i][j].row = i;
 			 grid[i][j].x = j * tileSize;
 			 grid[i][j].y = i * tileSize;
 		}
@@ -93,7 +81,7 @@ int main()
 			// if the two cats are in the same row or same column and one tile apart, then swap
 			if ((abs(x - x0) == 1 && y == y0) ||
 				(abs(y - y0) == 1 && x == x0)) {
-				swap(grid[y0][x0], grid[y][x]);
+				std::swap(grid[y0][x0], grid[y][x]);
 				isSwapping = true;
 				click = 0;
 			}
@@ -154,8 +142,8 @@ int main()
 		for (int i = 1; i <= 8; i++) {
 			for (int j = 1; j <= 8; j++) {
 				Cat &cat = grid[i][j];
-				int targetX = cat.col * tileSize;
-				int targetY = cat.row * tileSize;
+				int targetX = j * tileSize;
+				int targetY = i * tileSize;
 				int dx = cat.x - targetX;
 				int dy = cat.y - targetY;
 
@@ -189,7 +177,7 @@ int main()
 		// swap back if no match (invalid swap)
 		if (isSwapping && !isMoving) {
 			if (score == 0) {
-				swap(grid[y0][x0], grid[y][x]); 
+				std::swap(grid[y0][x0], grid[y][x]); 
 			}
 			isSwapping = false;
 		}
@@ -202,7 +190,7 @@ int main()
 				for (int i = 8; i > 0; i--) {
 					if (!grid[i][j].match) { // cat falls if no match
 						if (i != nextFreeRow)
-							swap(grid[i][j], grid[nextFreeRow][j]);
+							std::swap(grid[i][j], grid[nextFreeRow][j]);
 						nextFreeRow--; // move next free row up
 					}
 				}
